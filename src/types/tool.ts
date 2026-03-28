@@ -18,4 +18,5 @@ export interface ToolConfig {
   inputs: ToolInput[];
   systemPrompt: string;
   userPromptTemplate: (inputs: Record<string, string>) => string;
+  usageSteps?: string[];
 }

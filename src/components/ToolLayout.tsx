@@ -21,7 +21,9 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
 
   const getUsage = () => {
     try {
-      const usage = JSON.parse(localStorage.getItem(`usage_${config.id}`) || "[]");
+      const usage = JSON.parse(
+        localStorage.getItem(`usage_${config.id}`) || "[]",
+      );
       const now = Date.now();
       return usage.filter((ts: number) => now - ts < WINDOW_MS);
     } catch {
@@ -78,16 +80,38 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="text-center mb-6">
+        <span className="text-brand font-bold text-sm uppercase tracking-widest">
+          Free Tools
+        </span>
+      </div>
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-3">
           {config.name}
         </h2>
+
         <p className="text-lg text-gray-600 max-w-lg mx-auto">
           {config.description}
         </p>
       </div>
 
       <Card className="p-6 sm:p-8">
+        {!result && config.usageSteps && (
+          <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              How to generate {config.name.toLowerCase().includes("reply") ? "a reply" : "a bio"}
+            </h3>
+            <ol className="space-y-3">
+              {config.usageSteps.map((step, index) => (
+                <li key={index} className="flex gap-3 text-gray-600 leading-relaxed">
+                  <span className="font-semibold text-gray-400">{index + 1}.</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
         <form onSubmit={handleGenerate} className="space-y-6">
           {config.inputs.map((input) => (
             <div key={input.id} className="space-y-2">
@@ -154,7 +178,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
               <p className="font-semibold mb-1">Daily Limit Reached</p>
               <p>
                 You can only use this tool {USAGE_LIMIT} times every 24 hours.
-                Please come back tomorrow or upgrade to a premium plan.
+                Please come back tomorrow.
               </p>
             </div>
           )}

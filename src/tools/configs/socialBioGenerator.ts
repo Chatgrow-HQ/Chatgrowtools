@@ -43,5 +43,12 @@ Style: "${inputs.style}"
 Keyword to include: "${inputs.keyword || 'None specified'}"
 
 Please provide options for Instagram (with emojis) and X/Twitter (shorter, more punchy).`;
-  }
+  },
+  usageSteps: [
+    "Describe yourself or your business in a few words",
+    "Select whether this is for a person or business",
+    "Choose the tone for your bio",
+    "Click generate bios",
+    "Copy + paste your favourite into your profile!",
+  ],
 };

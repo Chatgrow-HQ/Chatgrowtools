@@ -46,4 +46,11 @@ Message to reply to:
 
 Please provide 3 variations of the reply.`;
   },
+  usageSteps: [
+    "Paste the message or content you want to respond to",
+    "Choose the tone of voice for your reply",
+    "Optionally specify the platform",
+    "Click generate reply",
+    "Copy + paste your favourite variation!",
+  ],
 };
