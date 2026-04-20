@@ -8,6 +8,7 @@ export interface ToolInput {
   required?: boolean;
   options?: { label: string; value: string }[];
   defaultValue?: string;
+  halfWidth?: boolean;
 }
 
 export interface ToolConfig {

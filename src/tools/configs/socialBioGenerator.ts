@@ -17,21 +17,17 @@ export const socialBioGeneratorConfig: ToolConfig = {
       id: 'style',
       label: 'Style / Vibe',
       type: 'select',
-      options: [
-        { label: 'Creative & Edgy', value: 'creative' },
-        { label: 'Professional & Trustworthy', value: 'professional' },
-        { label: 'Witty & Fun', value: 'witty' },
-        { label: 'Minimalist', value: 'minimalist' }
-      ],
       defaultValue: 'creative',
-      required: true
+      required: true,
+      halfWidth: true
     },
     {
       id: 'keyword',
       label: 'One Must-Include Keyword',
       type: 'text',
       placeholder: 'e.g. Coffee, Crypto, Web3, Fitness',
-      required: false
+      required: false,
+      halfWidth: true
     }
   ],
   systemPrompt: 'You are an expert social media manager specializing in copywriting. You create bios that are engaging, use relevant emojis, and fits the platform limitations perfectly.',

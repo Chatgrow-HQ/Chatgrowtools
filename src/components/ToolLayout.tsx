@@ -4,6 +4,7 @@ import { Button, Input, Textarea, Label, Card } from "./ui-components";
 import { generateText } from "../services/aiService";
 import { Sparkles, Copy, Check, RotateCcw } from "lucide-react";
 import { MarketingSection } from "./MarketingSection";
+import { cn } from "../lib/utils";
 
 interface ToolLayoutProps {
   config: ToolConfig;
@@ -112,9 +113,15 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
             </ol>
           </div>
         )}
-        <form onSubmit={handleGenerate} className="space-y-6">
+        <form onSubmit={handleGenerate} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
           {config.inputs.map((input) => (
-            <div key={input.id} className="space-y-2">
+            <div 
+              key={input.id} 
+              className={cn(
+                "space-y-2",
+                input.halfWidth ? "col-span-1" : "sm:col-span-2"
+              )}
+            >
               <Label htmlFor={input.id}>
                 {input.label}
                 {input.required && <span className="text-red-500 ml-1">*</span>}
@@ -158,7 +165,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
             </div>
           ))}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-2 sm:col-span-2">
             <Button
               type="button"
               variant="outline"
@@ -217,7 +224,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-400">
           Powered by{" "}
-          <span className="font-semibold text-brand/80">ChatGrow</span>
+          <a href="https://chatgrow.co" className="font-semibold text-brand/80">ChatGrow</a>
         </p>
       </div>
     </div>
