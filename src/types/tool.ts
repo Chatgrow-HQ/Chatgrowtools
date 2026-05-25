@@ -1,4 +1,4 @@
-export type ToolInputType = "textarea" | "text" | "select" | "number";
+export type ToolInputType = "textarea" | "text" | "select" | "number" | "file";
 
 export interface ToolInput {
   id: string;
@@ -9,6 +9,7 @@ export interface ToolInput {
   options?: { label: string; value: string }[];
   defaultValue?: string;
   halfWidth?: boolean;
+  accept?: string;
 }
 
 export interface ToolConfig {

@@ -2,18 +2,40 @@ import React, { useState } from "react";
 import type { ToolConfig } from "../types/tool";
 import { Button, Input, Textarea, Label, Card } from "./ui-components";
 import { generateText } from "../services/aiService";
-import { Sparkles, Copy, Check, RotateCcw } from "lucide-react";
+import {
+  Sparkles,
+  Copy,
+  Check,
+  RotateCcw,
+  Upload,
+  FileText,
+  X,
+  CheckCircle2,
+} from "lucide-react";
 import { MarketingSection } from "./MarketingSection";
 import { cn } from "../lib/utils";
+import { extractFileText } from "../lib/extractFileText";
 
 interface ToolLayoutProps {
   config: ToolConfig;
+}
+
+interface UploadedFileDetails {
+  name: string;
+  size: number;
+  characterCount: number;
+  preview: string;
 }
 
 export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [fileLoading, setFileLoading] = useState<Record<string, boolean>>({});
+  const [fileDetails, setFileDetails] = useState<
+    Record<string, UploadedFileDetails>
+  >({});
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
   const [limitReached, setLimitReached] = useState(false);
 
@@ -40,6 +62,85 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
 
   const handleInputChange = (id: string, value: string) => {
     setInputs((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const formatFileSize = (size: number) => {
+    if (size < 1024) {
+      return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const removeFile = (id: string) => {
+    setFileDetails((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setFileErrors((prev) => ({ ...prev, [id]: "" }));
+    handleInputChange(id, "");
+  };
+
+  const handleFileChange = async (id: string, file?: File) => {
+    setFileErrors((prev) => ({ ...prev, [id]: "" }));
+
+    if (!file) {
+      removeFile(id);
+      return;
+    }
+
+    setFileLoading((prev) => ({ ...prev, [id]: true }));
+    setFileDetails((prev) => ({
+      ...prev,
+      [id]: {
+        name: file.name,
+        size: file.size,
+        characterCount: 0,
+        preview: "",
+      },
+    }));
+
+    try {
+      const text = await extractFileText(file);
+
+      if (!text.trim()) {
+        throw new Error(
+          "No readable text was found in this file. Try another document or paste the content into the text tool.",
+        );
+      }
+
+      handleInputChange(id, text);
+      setFileDetails((prev) => ({
+        ...prev,
+        [id]: {
+          name: file.name,
+          size: file.size,
+          characterCount: text.trim().length,
+          preview: text.replace(/\s+/g, " ").trim().slice(0, 220),
+        },
+      }));
+    } catch (error) {
+      setFileDetails((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      handleInputChange(id, "");
+      setFileErrors((prev) => ({
+        ...prev,
+        [id]:
+          error instanceof Error
+            ? error.message
+            : "Could not read this file. Please try another file.",
+      }));
+    } finally {
+      setFileLoading((prev) => ({ ...prev, [id]: false }));
+    }
   };
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -76,7 +177,19 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
 
   const handleReset = () => {
     setInputs({});
+    setFileDetails({});
+    setFileErrors({});
     setResult("");
+  };
+
+  const getActionLabel = () => {
+    const name = config.name.toLowerCase();
+
+    if (name.includes("chat")) {
+      return "Generate Answer";
+    }
+
+    return "Generate Reply";
   };
 
   return (
@@ -152,6 +265,92 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
                     </option>
                   ))}
                 </select>
+              ) : input.type === "file" ? (
+                <div className="space-y-2">
+                  {inputs[input.id] && fileDetails[input.id] ? (
+                    <div className="rounded-lg border border-brand/20 bg-brand-light/40 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand shadow-sm">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-gray-900">
+                              {fileDetails[input.id].name}
+                            </p>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs font-medium text-brand">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Ready
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {formatFileSize(fileDetails[input.id].size)} ·{" "}
+                            {fileDetails[input.id].characterCount.toLocaleString()}{" "}
+                            characters extracted
+                          </p>
+                          {fileDetails[input.id].preview && (
+                            <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-600">
+                              {fileDetails[input.id].preview}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <label
+                          htmlFor={input.id}
+                          className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Replace file
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(input.id)}
+                          className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-white hover:text-red-600"
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor={input.id}
+                      className={cn(
+                        "flex min-h-[132px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-brand hover:bg-brand-light/30",
+                        fileErrors[input.id] && "border-red-200 bg-red-50",
+                      )}
+                    >
+                      <Upload className="mb-3 h-6 w-6 text-brand" />
+                      <span className="text-sm font-semibold text-gray-800">
+                        {fileLoading[input.id]
+                          ? "Reading file..."
+                          : "Choose a file to chat with"}
+                      </span>
+                      <span className="mt-1 text-xs text-gray-500">
+                        PDF, DOCX, TXT, CSV, JSON, XML, or Markdown
+                      </span>
+                    </label>
+                  )}
+                  <Input
+                    id={input.id}
+                    type="file"
+                    accept={input.accept}
+                    required={input.required && !inputs[input.id]}
+                    onClick={(e) => {
+                      e.currentTarget.value = "";
+                    }}
+                    onChange={(e) =>
+                      handleFileChange(input.id, e.target.files?.[0])
+                    }
+                    className="sr-only"
+                  />
+                  {fileErrors[input.id] && (
+                    <p className="text-sm text-red-600">
+                      {fileErrors[input.id]}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <Input
                   id={input.id}
@@ -176,7 +375,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ config }) => {
             </Button>
             <Button type="submit" loading={loading} className="w-full flex-1">
               {!loading && <Sparkles className="mr-2 h-4 w-4" />}
-              {loading ? "Generating..." : "Generate Reply"}
+              {loading ? "Generating..." : getActionLabel()}
             </Button>
           </div>
 
