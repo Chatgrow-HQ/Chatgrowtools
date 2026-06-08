@@ -27,3 +27,11 @@ dist-ssr
 .env
 
 .vercel
+scripts/
+docs/
+!scripts/
+scripts/*
+!scripts/build_chatgrow_documentation.py
+!docs/
+docs/*
+!docs/ChatGrow_Free_Tools_Technical_and_Operations_Manual.docx

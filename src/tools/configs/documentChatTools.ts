@@ -27,7 +27,8 @@ export const aiDocumentChatConfig: ToolConfig = {
       id: "documentText",
       label: "Document or data file",
       type: "file",
-      accept: ".pdf,.docx,.txt,.csv,.md,.json,.xml,text/plain,text/csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      accept:
+        ".pdf,.docx,.txt,.csv,.md,.json,.xml,text/plain,text/csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       required: true,
     },
     {
@@ -127,7 +128,8 @@ export const aiWordChatConfig: ToolConfig = {
       id: "documentText",
       label: "Word document",
       type: "file",
-      accept: ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      accept:
+        ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       required: true,
     },
     {
